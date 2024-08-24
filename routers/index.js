@@ -8,7 +8,6 @@ const router = express.Router();
 
 router.all("/:apiName/:path", (req, res) => {
     const {apiName, path} = req.params;
-    console.log(apiName, path);
     
 
     if (!apiName || !path) {
@@ -20,8 +19,6 @@ router.all("/:apiName/:path", (req, res) => {
     }
 
     const url = new URL(path, registry.services[apiName].url);
-    console.log(url);
-    
 
     axios({
         method: req.method,
@@ -40,17 +37,21 @@ router.all("/:apiName/:path", (req, res) => {
 });
 
 router.post("/registry", (req, res) => {
-    const {apiName, host, port, url} = req.body;
-    if (!apiName || !host || !port || !url) {
-        return res.status(400).send("apiName, host, port, and url are required");
+    const {apiName, host, port, protocol} = req.body;
+    if (!apiName || !host || !port || ! protocol) {
+        return res.status(400).send("apiName, host, port, and  protocol are required");
     };
 
-    registry.services[apiName] = {
-        apiName,
-        host,
-        port,
-        url
-    }
+    registry.services = {
+        [apiName]: {
+            apiName,
+            host,
+            protocol,
+            port,
+            url : new URL(`${protocol}://${host}:${port}`).toString(),
+        }
+    };
+
     
     fs.writeFile("./routers/registry.json", JSON.stringify(registry, null, 2), (err) => {
         if (err) {            
