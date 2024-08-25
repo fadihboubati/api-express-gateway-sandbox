@@ -1,6 +1,6 @@
 # Project Title
 
-API Express Sandbox (or your preferred name)
+API Express Gateway Sandbox
 
 ## Description
 
