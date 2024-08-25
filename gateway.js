@@ -9,5 +9,5 @@ app.use(express.json());
 
 app.use("/", router)
 
-app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+app.listen(PORT, () => console.log(`Gateway server running on port ${PORT}`));
 

@@ -1,11 +1,27 @@
 {
   "services": {
-    "fakeApi": {
-      "apiName": "fakeApi",
-      "host": "localhost",
-      "protocol": "http",
-      "port": 3030,
-      "url": "http://localhost:3030/"
-    }
+    "fakeApi": [
+      {
+        "apiName": "fakeApi",
+        "host": "localhost",
+        "protocol": "http",
+        "port": 3030,
+        "url": "http://localhost:3030/"
+      },
+      {
+        "apiName": "fakeApi",
+        "host": "localhost",
+        "protocol": "http",
+        "port": 3031,
+        "url": "http://localhost:3031/"
+      },
+      {
+        "apiName": "fakeApi",
+        "host": "localhost",
+        "protocol": "http",
+        "port": 3032,
+        "url": "http://localhost:3032/"
+      }
+    ]
   }
 }
