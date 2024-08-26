@@ -1,7 +1,15 @@
-# Project Title
+# API Gateway with Load Balancing
 
-API Express Gateway Sandbox
+## Overview
 
-## Description
+This project is a simple API gateway with round-robin load balancing functionality. It routes incoming requests to multiple backend instances of a fakeApi service and evenly distributes the load across these instances. The gateway uses a service registry to dynamically manage and route traffic to the registered APIs.
 
-This is an ongoing project demonstrating the creation of a simple API Gateway using Express.js. It's currently under development, with the goal of providing a foundation for learning and experimenting with API Gateway concepts.
+## Features
+
+* **API Gateway**: Routes requests to different backend instances based on the API name and path.
+* **Round-Robin** Load Balancing: Distributes incoming requests evenly across multiple backend instances.
+* **Service Registry**: Allows for dynamic registration and unregistration of backend APIs.
+
+### Note
+
+This project is currently under development. Features and functionalities may be added or modified in future updates.
