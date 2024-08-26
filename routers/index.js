@@ -108,6 +108,10 @@ router.post("/unregister", (req, res) => {
     }
 
     registry.services[apiName].splice(existingApi, 1);
+
+    if (registry.services[apiName].length === 0) {
+        delete registry.services[apiName];
+    }
     
     fs.writeFile("./routers/registry.json", JSON.stringify(registry, null, 2), (err) => {
         if (err) {            
