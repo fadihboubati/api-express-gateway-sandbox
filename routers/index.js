@@ -80,6 +80,37 @@ router.post("/registry", (req, res) => {
 
 });
 
+router.post("/unregister", (req, res) => {
+    const {apiName, host, port, protocol} = req.body;
+    if (!apiName || !host || !port || ! protocol) {
+        return res.status(400).send("apiName, host, port, and  protocol are required");
+    };
+
+    const url = new URL(`${protocol}://${host}:${port}`).toString();
+
+    if (!registry.services[apiName]) {
+        return res.send("api not registered for " + apiName);
+    }
+
+    const existingApi = registry.services[apiName].findIndex((api) => api.url === url);
+
+
+    if (existingApi === -1) {
+        return res.send("api not registered for " + apiName);
+    }
+
+    registry.services[apiName].splice(existingApi, 1);
+    
+    fs.writeFile("./routers/registry.json", JSON.stringify(registry, null, 2), (err) => {
+        if (err) {            
+            const errorMessage = `Could not unregister api for ${apiName} \n ${err?.message || err}`;
+            return res.status(500).send(errorMessage);
+        } else {            
+            res.send("api successfully unregistered for " + apiName);
+        }
+    });
+
+});
 
 
 

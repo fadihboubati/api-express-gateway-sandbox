@@ -14,13 +14,6 @@
         "protocol": "http",
         "port": 3031,
         "url": "http://localhost:3031/"
-      },
-      {
-        "apiName": "fakeApi",
-        "host": "localhost",
-        "protocol": "http",
-        "port": 3032,
-        "url": "http://localhost:3032/"
       }
     ]
   }
