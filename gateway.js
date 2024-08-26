@@ -1,10 +1,13 @@
 const express = require('express');
+const helmet = require("helmet");
+
 const app = express();
+app.use(express.json());
+app.use(helmet());
 
 const router = require("./routers/index.js")
 const PORT = 3000;
 
-app.use(express.json());
 
 
 app.use("/", router)
