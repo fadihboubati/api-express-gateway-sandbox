@@ -2,10 +2,10 @@ const express = require("express");
 const axios = require("axios");
 const registry = require("./registry.json");
 const fs = require("fs");
+const loadBalancer = require("../util/loadBalancer");
 
 const router = express.Router();
 
-let currentInstanceIndex = 0;
 router.all("/:apiName/:path", (req, res) => {
     const {apiName, path} = req.params;
     
@@ -14,18 +14,16 @@ router.all("/:apiName/:path", (req, res) => {
         return res.status(400).send("apiName and path are required");
     }
 
-    if (!registry.services[apiName]) {
-        return res.status(404).send("api not found");
+    // Get the services from the registry
+    const service = registry.services[apiName];
+
+    if (!service) {
+        return res.status(404).send("API not found");
     }
 
-    // Get the list of available instances
-    const instances = registry.services[apiName];
-
     // Select the current instance using round-robin strategy
-    const instance = instances[currentInstanceIndex];
-
-    // Update the index to point to the next instance
-    currentInstanceIndex = (currentInstanceIndex + 1) % instances.length;
+    const instanceIndex = loadBalancer[service.loadBalancerStrategy](service);
+    const instance = service.instances[instanceIndex];
 
     const url = new URL(path, instance.url).toString();
 
@@ -46,7 +44,7 @@ router.all("/:apiName/:path", (req, res) => {
 });
 
 router.post("/registry", (req, res) => {
-    const {apiName, host, port, protocol} = req.body;
+    const {apiName, host, port, protocol, loadBalancerStrategy = "ROUND_ROBIN"} = req.body;
     if (!apiName || !host || !port || ! protocol) {
         return res.status(400).send("apiName, host, port, and  protocol are required");
     };
@@ -64,25 +62,27 @@ router.post("/registry", (req, res) => {
     if (registry.services[apiName]) {
 
         // check if the api already exists in the registry
-        const existingApi = registry.services[apiName].find((api) => api.url === url);
+        const existingApi = registry.services[apiName].instances.find((api) => api.url === url);
         if (existingApi) {
-            return res.send("api already registered for " + apiName);
+            return res.send("API already registered for " + apiName);
         }
 
-        registry.services[apiName].push(newApi)
+        registry.services[apiName].instances.push(newApi)
     } else {
         registry.services = {
-            [apiName]: [ newApi ]
+            loadBalancerStrategy,
+            index: 0,
+            instances: [newApi]
         };
     }
 
     
     fs.writeFile("./routers/registry.json", JSON.stringify(registry, null, 2), (err) => {
         if (err) {            
-            const errorMessage = `Could not register api for ${apiName} \n ${err?.message || err}`;
+            const errorMessage = `Could not register API for ${apiName} \n ${err?.message || err}`;
             return res.status(500).send(errorMessage);
         } else {            
-            res.send("api successfully registered for " + apiName);
+            res.send("API successfully registered for " + apiName);
         }
     });
 
@@ -97,28 +97,36 @@ router.post("/unregister", (req, res) => {
     const url = new URL(`${protocol}://${host}:${port}`).toString();
 
     if (!registry.services[apiName]) {
-        return res.send("api not registered for " + apiName);
+        return res.send("API not registered for " + apiName);
     }
 
-    const existingApi = registry.services[apiName].findIndex((api) => api.url === url);
+    const service = registry.services[apiName];
+    const instanceIndex = service.instances.findIndex((instance) => instance.url === url);
 
-
-    if (existingApi === -1) {
-        return res.send("api not registered for " + apiName);
+    if (instanceIndex === -1) {
+        return res.status(404).send("API instance not found for " + apiName);
     }
 
-    registry.services[apiName].splice(existingApi, 1);
 
-    if (registry.services[apiName].length === 0) {
+    // Remove the instance
+    service.instances.splice(instanceIndex, 1);
+
+    // If no instances are left, remove the service
+    if (service.instances.length === 0) {
         delete registry.services[apiName];
+    } else {
+        // Update the index for load balancing
+        if (service.index >= service.instances.length) {
+            service.index = 0; // Reset index if it points to a non-existing instance
+        }
     }
     
     fs.writeFile("./routers/registry.json", JSON.stringify(registry, null, 2), (err) => {
         if (err) {            
-            const errorMessage = `Could not unregister api for ${apiName} \n ${err?.message || err}`;
+            const errorMessage = `Could not unregister API for ${apiName} \n ${err?.message || err}`;
             return res.status(500).send(errorMessage);
         } else {            
-            res.send("api successfully unregistered for " + apiName);
+            res.send("API successfully unregistered for " + apiName);
         }
     });
 
