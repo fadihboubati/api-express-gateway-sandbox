@@ -5,18 +5,18 @@ const app = express();
 
 app.use(express.json());
 
-const PORT = 3030;
+const PORT = 3031;
 const HOST = "localhost";
 const PROTOCOL = "http";
 
 const API_GATEWAY_URL = `http://localhost:3000`
 
 app.get("/fakeRoute1", (_, res) => {
-    res.send(`fakeRoute1 called from the FAKE API on port ${PORT}!`);
+    res.send(`fakeRoute1 called from the FAKE API 2 on port ${PORT}!`);
 })
 
 app.get("/fakeRoute2", (_, res) => {
-    res.send(`fakeRoute2 called from the FAKE API on port ${PORT}!`);
+    res.send(`fakeRoute2 called from the FAKE API 2 on port ${PORT}!`);
 })
 
 app.listen(PORT, () => {

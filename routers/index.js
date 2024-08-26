@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const router = express.Router();
 
-
+let currentInstanceIndex = 0;
 router.all("/:apiName/:path", (req, res) => {
     const {apiName, path} = req.params;
     
@@ -18,8 +18,16 @@ router.all("/:apiName/:path", (req, res) => {
         return res.status(404).send("api not found");
     }
 
-    // for now, will get the first api in the registry for safety
-    const url = new URL(path, registry.services[apiName][0].url).toString();    
+    // Get the list of available instances
+    const instances = registry.services[apiName];
+
+    // Select the current instance using round-robin strategy
+    const instance = instances[currentInstanceIndex];
+
+    // Update the index to point to the next instance
+    currentInstanceIndex = (currentInstanceIndex + 1) % instances.length;
+
+    const url = new URL(path, instance.url).toString();
 
     axios({
         method: req.method,
