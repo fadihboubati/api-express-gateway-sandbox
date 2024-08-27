@@ -6,6 +6,36 @@ const loadBalancer = require("../util/loadBalancer");
 
 const router = express.Router();
 
+router.post("/services/:apiName/toggle", (req, res) => {
+    const { apiName } = req.params;
+    const { url, enabled } = req.body;
+
+    const service = registry.services[apiName];
+
+    if (!service) {
+        return res.status(404).send("API not found");
+    }
+
+    const instance = service.instances.find(inst => inst.url === url);
+
+    if (!instance) {
+        return res.status(404).send("Instance not found");
+    }
+
+    // Update the enabled status of the instance
+    instance.enabled = enabled;
+
+    // Write the updated registry to the registry.json file
+    fs.writeFile("./routers/registry.json", JSON.stringify(registry, null, 2), (err) => {
+        if (err) {            
+            return res.status(500).send("Error updating registry file.");
+        }
+        
+        res.send(`Instance at ${url} is now ${enabled ? "enabled" : "disabled"}.`);
+    });
+
+});
+
 router.all("/:apiName/:path", (req, res) => {
     const {apiName, path} = req.params;
     
@@ -21,6 +51,10 @@ router.all("/:apiName/:path", (req, res) => {
         return res.status(404).send("API not found");
     }
 
+    if (!service.loadBalancerStrategy)
+    {
+
+    }
     // Select the current instance using round-robin strategy
     const instanceIndex = loadBalancer[service.loadBalancerStrategy](service);
     const instance = service.instances[instanceIndex];
