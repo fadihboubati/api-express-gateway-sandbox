@@ -10,6 +10,7 @@ This project is a simple API gateway with round-robin load balancing functionali
 * **Round-Robin** Load Balancing: Distributes incoming requests evenly across multiple backend instances.
 * **Service Registry**: Allows for dynamic registration and unregistration of backend APIs.
 * **Enable/Disable API Instances**: Provides routes to enable or disable specific API instances dynamically.
+* **Basic Authentication**: Secures the API gateway with basic authentication. User credentials are stored securely using hashed passwords.
 
 ### Note
 
